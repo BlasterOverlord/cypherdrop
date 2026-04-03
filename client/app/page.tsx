@@ -3,6 +3,7 @@
 import { useState } from "react";
 import DropZone from "@/components/DropZone";
 import { Lock, File as FileIcon, CheckCircle2, Shield, UploadCloud, Copy } from "lucide-react";
+import { generateEncryptionKey, exportKey, calculateFileHash, encryptFile } from "@/utils/crypto";
 
 type UploadState = "IDLE" | "ENCRYPTING" | "UPLOADING" | "SUCCESS";
 
@@ -13,23 +14,56 @@ export default function Home() {
 
   const handleFileDrop = async (droppedFile: File) => {
     setFile(droppedFile);
-    // Simulate the flow for now. We will implement real crypto in the next phase.
     setUploadState("ENCRYPTING");
     
-    // Fake encryption delay
-    await new Promise((resolve) => setTimeout(resolve, 2000));
-    
-    setUploadState("UPLOADING");
+    try {
+      const fileBuffer = await droppedFile.arrayBuffer();
 
-    // Fake upload delay
-    await new Promise((resolve) => setTimeout(resolve, 2000));
+      // Step 1: Hash the raw original file (used on server AND client side later for integrity)
+      const fileHash = await calculateFileHash(fileBuffer);
+      
+      // Step 2: Generate a secure 256-bit AES-GCM Key exclusively on this local browser
+      const key = await generateEncryptionKey();
+      const exportedKeyString = await exportKey(key);
 
-    // Fake a URL (Wait for next phase to get real crypto keys and IDs)
-    const fakeId = "a1b2c3d4";
-    const fakeKey = "z9y8x7w6v5u4";
-    const url = `${window.location.origin}/download/${fakeId}#${fakeKey}`;
-    setShareLink(url);
-    setUploadState("SUCCESS");
+      // Step 3: Encrypt the File Buffer (attaching the raw IV inside the payload) 
+      const encryptedCombinedBuffer = await encryptFile(fileBuffer, key);
+
+      // We are now safely "encrypted". Now we jump to uploading the payload.
+      setUploadState("UPLOADING");
+
+      // Wrap the raw buffer into a secure Blob 
+      const formData = new FormData();
+      const encryptedBlob = new Blob([encryptedCombinedBuffer], { type: "application/octet-stream" });
+      
+      // Add the Blob with original file name (Original name isn't encrypted in this initial version, but the contents are)
+      formData.append("file", encryptedBlob, droppedFile.name);
+      formData.append("fileHash", fileHash);
+
+      // Send to the Express API Locker
+      const response = await fetch("http://localhost:5000/api/upload", {
+        method: "POST",
+        body: formData,
+      });
+
+      const data = await response.json();
+      
+      if (response.ok) {
+        // Construct the Shareable Link!
+        // 1. The ID comes back from the server (to identify the Blob chunk)
+        // 2. The KEY remains in the window Hash (Never sent over network, never hits a database)
+        const url = `${window.location.origin}/download/${data.fileId}#${exportedKeyString}`;
+        setShareLink(url);
+        setUploadState("SUCCESS");
+      } else {
+        alert(data.error || "Server upload failed.");
+        setUploadState("IDLE");
+      }
+    } catch (e) {
+      console.error(e);
+      alert("Encryption or Upload failed. Is the server running?");
+      setUploadState("IDLE");
+    }
   };
 
   const copyToClipboard = () => {
