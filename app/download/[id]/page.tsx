@@ -12,7 +12,7 @@ export default function DownloadPage() {
   const fileId = params?.id as string;
 
   const [downloadState, setDownloadState] = useState<DownloadState>("LOADING_META");
-  const [metadata, setMetadata] = useState<{ filename: string; fileHash: string; expiresAt: string } | null>(null);
+  const [metadata, setMetadata] = useState<{ filename: string; fileHash: string; fileSize?: number; expiresAt: string } | null>(null);
   const [errorMessage, setErrorMessage] = useState<string>("");
   const [decryptedFileUrl, setDecryptedFileUrl] = useState<string | null>(null);
 
@@ -98,7 +98,7 @@ export default function DownloadPage() {
           </h1>
         </div>
         <p className="text-gray-400 font-mono text-xs sm:text-sm max-w-sm sm:max-w-md tracking-wider px-4">
-          Secure Payload Retrieval. Zero server-side visibility.
+          Secure File Retrieval. Zero server-side visibility.
         </p>
       </header>
 
@@ -118,7 +118,7 @@ export default function DownloadPage() {
               <Lock size={64} className="text-neon-purple sm:w-20 sm:h-20 glow-purple rounded-full p-4 bg-neon-purple/10 border border-neon-purple/30 z-10 relative" />
             </div>
             <h2 className="text-xl sm:text-2xl font-bold mb-3 sm:mb-4 tracking-wide text-white font-mono uppercase">
-              Encrypted Payload Found
+              Encrypted File Found
             </h2>
             
             <div className="flex items-center gap-3 sm:gap-4 mb-6 sm:mb-8 bg-black/50 px-4 sm:px-6 py-3 border border-gray-700 rounded-lg w-full max-w-md sm:max-w-full">
@@ -126,6 +126,11 @@ export default function DownloadPage() {
               <span className="text-gray-300 font-mono text-[10px] sm:text-sm truncate flex-1 text-left">
                 {metadata.filename}
               </span>
+              {metadata.fileSize && (
+                <span className="text-gray-500 font-mono text-[10px] sm:text-xs">
+                  {(metadata.fileSize / 1024 / 1024).toFixed(2)} MB
+                </span>
+              )}
             </div>
             
             <button
@@ -139,9 +144,6 @@ export default function DownloadPage() {
             <div className="flex flex-col text-xs sm:text-sm gap-2">
               <p className="text-gray-400 font-mono">
                 Requires valid client-side key in URL hash.
-              </p>
-              <p className="mt-4 flex items-center gap-2 justify-center text-red-400 bg-red-400/10 px-3 py-2 rounded-lg border border-red-400/20 font-mono w-full text-[10px] sm:text-xs">
-                <Clock size={16} className="shrink-0" /> Payload auto-destructs 24h after upload.
               </p>
             </div>
           </div>
@@ -164,7 +166,7 @@ export default function DownloadPage() {
             <ShieldCheck size={80} className="text-neon-green mb-6 glow-green sm:w-24 sm:h-24" />
             <h2 className="text-2xl sm:text-3xl font-bold mb-3 sm:mb-4 tracking-wide text-white uppercase font-mono">Integrity Verified</h2>
             <p className="text-gray-400 text-xs sm:text-sm mb-6 sm:mb-8 max-w-sm sm:max-w-md px-2">
-              The file hash matches exactly with the server's immutable records. Decryption was fully successful.
+              The file hash matches exactly with the server&apos;s immutable records. Decryption was fully successful.
             </p>
             
             <div className="text-neon-green font-mono text-[10px] sm:text-xs p-4 sm:p-5 border border-neon-green/30 bg-neon-green/10 rounded-lg w-full mb-8 sm:mb-10 text-left overflow-x-auto shadow-inner">

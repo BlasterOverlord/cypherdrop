@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import DropZone from "@/components/DropZone";
+import toast from "react-hot-toast";
 import { Lock, File as FileIcon, CheckCircle2, Shield, UploadCloud, Copy, Clock } from "lucide-react";
 import { generateEncryptionKey, exportKey, calculateFileHash, encryptFile } from "@/utils/crypto";
 
@@ -44,19 +45,19 @@ export default function Home() {
         setShareLink(url);
         setUploadState("SUCCESS");
       } else {
-        alert(data.error || "Server upload failed.");
+        toast.error(data.error || "Server upload failed.");
         setUploadState("IDLE");
       }
     } catch (e) {
       console.error(e);
-      alert("Encryption or Upload failed. Is the server running?");
+      toast.error("Encryption or Upload failed. Is the server running?");
       setUploadState("IDLE");
     }
   };
 
   const copyToClipboard = () => {
     navigator.clipboard.writeText(shareLink);
-    alert("Share link copied to clipboard!");
+    toast.success("Share link copied to clipboard!");
   };
 
   const reset = () => {
@@ -79,6 +80,10 @@ export default function Home() {
         <p className="text-gray-400 font-mono text-xs sm:text-sm max-w-sm sm:max-w-md tracking-wider">
           End-to-End Encrypted File Transfer. The server never sees your keys.
         </p>
+        <div className="mt-4 px-3 sm:px-4 py-1.5 sm:py-2 border border-blue-500/30 text-blue-400 rounded bg-blue-500/10 text-[10px] sm:text-xs font-mono uppercase tracking-widest flex items-center justify-center gap-2">
+          <span className="w-2 h-2 rounded-full bg-neon-blue animate-pulse shrink-0"></span>
+          Zero Knowledge Architecture
+        </div>
       </header>
 
       <section className="w-full max-w-xl sm:max-w-2xl bg-cyber-gray/90 backdrop-blur-md border border-gray-800 rounded-2xl p-6 sm:p-8 z-10 shadow-2xl relative">
@@ -88,7 +93,7 @@ export default function Home() {
             <DropZone onFileDrop={handleFileDrop} />
             <div className="mt-6 flex items-center justify-center gap-2 text-gray-500 text-xs sm:text-sm">
               <Clock size={14} className="text-neon-purple" />
-              <p>Uploaded files self-destruct automatically after 24 hours.</p>
+              <p>Uploaded files will be deleted automatically after 24 hours.</p>
             </div>
           </>
         )}
@@ -107,7 +112,7 @@ export default function Home() {
             </div>
             
             <h2 className={`text-xl sm:text-2xl font-bold mb-4 font-mono uppercase tracking-widest ${uploadState === "ENCRYPTING" ? "text-glow-purple text-neon-purple" : "text-glow-blue text-neon-blue"}`}>
-              {uploadState === "ENCRYPTING" ? "Encrypting Locally..." : "Uploading Payload..."}
+              {uploadState === "ENCRYPTING" ? "Encrypting Locally..." : "Uploading File..."}
             </h2>
             <div className="flex items-center justify-center gap-3 px-4 sm:px-6 py-3 bg-black/50 rounded-lg border border-gray-800 font-mono text-xs sm:text-sm text-white w-full max-w-xs sm:max-w-sm">
               <FileIcon size={16} className="text-gray-400 shrink-0" />
@@ -141,11 +146,6 @@ export default function Home() {
               >
                 <Copy size={16} className="sm:w-5 sm:h-5" />
               </button>
-            </div>
-
-            <div className="w-full bg-red-500/10 border border-red-500/20 text-red-400 p-3 sm:p-4 rounded-lg flex items-start sm:items-center gap-3 text-left sm:text-center mb-8">
-              <Clock size={18} className="shrink-0 mt-0.5 sm:mt-0" />
-              <p className="text-xs sm:text-sm font-mono flex-1">This link and file will self-destruct from the servers automatically in <span className="font-bold text-white">24 Hours</span>.</p>
             </div>
 
             <button 

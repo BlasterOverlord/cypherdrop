@@ -65,11 +65,6 @@ export default function DropZone({ onFileDrop }: { onFileDrop: (file: File) => v
       <p className="text-gray-400 text-center text-xs sm:text-sm">
         or click to browse from your device
       </p>
-      
-      <div className="mt-6 sm:mt-8 px-3 sm:px-4 py-2 border border-blue-500/30 text-blue-400 rounded bg-blue-500/10 text-[10px] sm:text-xs font-mono uppercase tracking-widest flex bg-opacity-50 items-center justify-center gap-2">
-        <span className="w-2 h-2 rounded-full bg-neon-blue animate-pulse shrink-0"></span>
-        Zero Knowledge Architecture
-      </div>
     </div>
   );
 }

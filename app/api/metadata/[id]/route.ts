@@ -14,6 +14,7 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ id: 
 
     return NextResponse.json({
       filename: file.filename,
+      fileSize: file.fileSize || 0,
       fileHash: file.fileHash,
       expiresAt: file.expiresAt,
     });

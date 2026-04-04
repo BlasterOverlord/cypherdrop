@@ -38,6 +38,7 @@ export async function POST(req: NextRequest) {
     await FileModel.create({
       fileId,
       filename: file.name,
+      fileSize: buffer.length,
       encryptedBlobPath,
       fileHash,
       expiresAt,

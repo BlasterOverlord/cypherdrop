@@ -11,6 +11,10 @@ const fileSchema = new mongoose.Schema(
       type: String,
       required: true,
     },
+    fileSize: {
+      type: Number,
+      required: true,
+    },
     encryptedBlobPath: {
       type: String,
       required: true,
