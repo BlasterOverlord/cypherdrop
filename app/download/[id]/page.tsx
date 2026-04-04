@@ -2,9 +2,8 @@
 
 import { useEffect, useState } from "react";
 import { useParams } from "next/navigation";
-import { DownloadCloud, ShieldCheck, AlertTriangle, Lock, File as FileIcon, Loader2 } from "lucide-react";
+import { DownloadCloud, ShieldCheck, AlertTriangle, Lock, File as FileIcon, Loader2, Shield, Clock } from "lucide-react";
 import { importKey, decryptFile, calculateFileHash } from "@/utils/crypto";
-import { motion, AnimatePresence } from "framer-motion";
 
 type DownloadState = "LOADING_META" | "READY" | "DECRYPTING" | "VERIFIED" | "ERROR";
 
@@ -49,7 +48,7 @@ export default function DownloadPage() {
     try {
       const hashFragment = window.location.hash.substring(1);
       if (!hashFragment) {
-        throw new Error("Decryption key missing from URL.");
+        throw new Error("Decryption key missing from URL. Cannot decrypt.");
       }
 
       const cryptoKey = await importKey(hashFragment);
@@ -80,169 +79,129 @@ export default function DownloadPage() {
       a.click();
       document.body.removeChild(a);
 
-      } catch (err: unknown) {
+    } catch (err: any) {
       console.error(err);
-      if (err instanceof Error) {
-        setErrorMessage(err.message || "Decryption failed. The key might be invalid.");
-      } else {
-        setErrorMessage("Decryption failed. The key might be invalid.");
-      }
+      setErrorMessage(err.message || "Decryption failed. The key might be invalid.");
       setDownloadState("ERROR");
     }
   };
 
   return (
-    <main className="min-h-screen flex flex-col items-center justify-center px-4 py-8 sm:p-6 relative overflow-hidden bg-[#05050A]">
-      <div className="fixed inset-0 pointer-events-none opacity-[0.03] z-0" 
-           style={{ backgroundImage: "linear-gradient(#0ff0fc 1px, transparent 1px), linear-gradient(90deg, #0ff0fc 1px, transparent 1px)", backgroundSize: "3rem 3rem" }}>
-      </div>
-
-      <motion.div 
-        animate={{ scale: [1, 1.1, 1], opacity: [0.2, 0.4, 0.2] }} 
-        transition={{ duration: 10, repeat: Infinity, ease: "easeInOut" }}
-        className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[400px] h-[400px] sm:w-[600px] sm:h-[600px] bg-neon-blue/10 blur-[120px] rounded-full pointer-events-none" 
-      />
+    <main className="min-h-screen flex flex-col items-center justify-center p-4 sm:p-6 relative overflow-hidden bg-cyber-dark">
+      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[300px] sm:w-[600px] h-[300px] sm:h-[600px] bg-neon-blue/10 sm:bg-neon-blue/5 blur-[80px] sm:blur-[120px] rounded-full pointer-events-none"></div>
 
       <header className="mb-8 sm:mb-12 flex flex-col items-center text-center z-10">
-        <motion.div 
-          initial={{ y: -20, opacity: 0 }}
-          animate={{ y: 0, opacity: 1 }}
-          className="flex items-center gap-3 sm:gap-4 mb-4"
-        >
-          <ShieldCheck size={36} className="text-neon-blue text-glow-blue sm:w-10 sm:h-10" />
+        <div className="flex items-center gap-2 sm:gap-3 mb-2 sm:mb-4">
+          <Shield size={32} className="text-neon-purple sm:w-10 sm:h-10" />
           <h1 className="text-3xl sm:text-5xl font-black tracking-tighter uppercase text-white">
-            Secure<span className="text-neon-blue text-glow-blue">Retrieve</span>
+            Cypher<span className="text-neon-blue text-glow-blue">Drop</span>
           </h1>
-        </motion.div>
-        <motion.p 
-          initial={{ opacity: 0 }} 
-          animate={{ opacity: 1 }} 
-          transition={{ delay: 0.2 }}
-          className="text-gray-400 font-mono text-xs sm:text-sm max-w-xs sm:max-w-md tracking-wider leading-relaxed px-4"
-        >
-          Decrypting payload locally. Zero server-side visibility.
-        </motion.p>
+        </div>
+        <p className="text-gray-400 font-mono text-xs sm:text-sm max-w-sm sm:max-w-md tracking-wider px-4">
+          Secure Payload Retrieval. Zero server-side visibility.
+        </p>
       </header>
 
-      <section className="w-full max-w-md sm:max-w-lg bg-[#0B0D14]/80 backdrop-blur-xl border border-gray-800/80 rounded-[2rem] p-6 sm:p-10 z-10 shadow-[0_20px_50px_rgba(0,0,0,0.5)] relative overflow-hidden">
-        
-        <AnimatePresence mode="wait">
-          {downloadState === "LOADING_META" && (
-            <motion.div 
-              key="loading"
-              initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
-              className="flex flex-col items-center justify-center py-12"
-            >
-              <Loader2 size={48} className="animate-spin text-neon-blue mb-6 drop-shadow-[0_0_10px_rgba(15,240,252,0.8)]" />
-              <p className="font-mono text-neon-blue/70 uppercase tracking-[0.2em] text-xs sm:text-sm animate-pulse">Locating coordinates...</p>
-            </motion.div>
-          )}
+      <section className="w-full max-w-lg sm:max-w-xl bg-cyber-gray/90 backdrop-blur-md border border-gray-800 rounded-2xl p-6 sm:p-8 z-10 shadow-2xl relative">
+        <div className="absolute inset-0 bg-gradient-to-b from-white/5 to-transparent rounded-2xl pointer-events-none"></div>
 
-          {downloadState === "READY" && metadata && (
-            <motion.div 
-              key="ready"
-              initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 1.05 }}
-              className="flex flex-col items-center text-center"
+        {downloadState === "LOADING_META" && (
+          <div className="flex flex-col items-center justify-center py-12 sm:py-16">
+            <Loader2 size={48} className="animate-spin text-neon-blue mb-4 sm:mb-6 sm:w-14 sm:h-14" />
+            <p className="font-mono text-gray-400 uppercase tracking-widest text-xs sm:text-sm">Scanning coordinates...</p>
+          </div>
+        )}
+
+        {downloadState === "READY" && metadata && (
+          <div className="flex flex-col items-center text-center w-full">
+            <div className="relative mb-6">
+              <Lock size={64} className="text-neon-purple sm:w-20 sm:h-20 glow-purple rounded-full p-4 bg-neon-purple/10 border border-neon-purple/30 z-10 relative" />
+            </div>
+            <h2 className="text-xl sm:text-2xl font-bold mb-3 sm:mb-4 tracking-wide text-white font-mono uppercase">
+              Encrypted Payload Found
+            </h2>
+            
+            <div className="flex items-center gap-3 sm:gap-4 mb-6 sm:mb-8 bg-black/50 px-4 sm:px-6 py-3 border border-gray-700 rounded-lg w-full max-w-md sm:max-w-full">
+              <FileIcon size={20} className="text-gray-400 shrink-0" />
+              <span className="text-gray-300 font-mono text-[10px] sm:text-sm truncate flex-1 text-left">
+                {metadata.filename}
+              </span>
+            </div>
+            
+            <button
+              onClick={handleDecryptAndDownload}
+              className="w-full py-4 sm:py-5 rounded-lg bg-neon-blue text-black font-bold uppercase tracking-widest hover:bg-white transition-all shadow-[0_0_20px_#0ff0fc] hover:shadow-[0_0_30px_#fff] flex items-center justify-center gap-3 cursor-pointer mb-6"
             >
-              <div className="bg-neon-purple/10 p-4 rounded-full mb-6 border border-neon-purple/20 glow-purple">
-                <Lock size={48} className="text-neon-purple sm:w-16 sm:h-16 text-glow-purple" />
-              </div>
-              <h2 className="text-xl sm:text-2xl font-bold mb-4 tracking-wider text-white">Encrypted Payload Found</h2>
-              
-              <div className="flex items-center gap-3 w-full max-w-[90%] mb-10 bg-black/60 px-4 py-3 border border-gray-800 rounded-xl">
-                <FileIcon size={20} className="text-gray-400 shrink-0" />
-                <span className="text-gray-300 font-mono text-sm truncate shrink">{metadata.filename}</span>
-              </div>
-              
-              <button
-                onClick={handleDecryptAndDownload}
-                className="w-full py-4 rounded-xl bg-neon-blue hover:bg-white text-black font-black uppercase tracking-widest transition-all duration-300 glow-blue hover:shadow-[0_0_30px_rgba(255,255,255,0.8)] flex items-center justify-center gap-3 active:scale-95"
+              <DownloadCloud size={24} className="sm:w-6 sm:h-6" />
+              <span className="text-sm sm:text-base">Decrypt &amp; Download</span>
+            </button>
+
+            <div className="flex flex-col text-xs sm:text-sm gap-2">
+              <p className="text-gray-400 font-mono">
+                Requires valid client-side key in URL hash.
+              </p>
+              <p className="mt-4 flex items-center gap-2 justify-center text-red-400 bg-red-400/10 px-3 py-2 rounded-lg border border-red-400/20 font-mono w-full text-[10px] sm:text-xs">
+                <Clock size={16} className="shrink-0" /> Payload auto-destructs 24h after upload.
+              </p>
+            </div>
+          </div>
+        )}
+
+        {downloadState === "DECRYPTING" && (
+          <div className="flex flex-col items-center justify-center py-10 sm:py-12 px-4 text-center">
+            <div className="w-20 h-20 sm:w-28 sm:h-28 rounded-full border-[6px] sm:border-8 border-t-transparent border-neon-blue animate-spin glow-blue mb-6 sm:mb-8 border-r-neon-blue/30 border-b-neon-blue/10"></div>
+            <h2 className="text-lg sm:text-2xl font-bold text-neon-blue text-glow-blue font-mono uppercase tracking-widest animate-pulse max-w-full">
+              Decrypting Locally
+            </h2>
+            <p className="text-gray-400 text-[10px] sm:text-xs mt-4 sm:mt-6 uppercase tracking-widest font-mono">
+              Running SHA-256 Checksum Matrix
+            </p>
+          </div>
+        )}
+
+        {downloadState === "VERIFIED" && metadata && (
+          <div className="flex flex-col items-center text-center py-6 sm:py-8 w-full">
+            <ShieldCheck size={80} className="text-neon-green mb-6 glow-green sm:w-24 sm:h-24" />
+            <h2 className="text-2xl sm:text-3xl font-bold mb-3 sm:mb-4 tracking-wide text-white uppercase font-mono">Integrity Verified</h2>
+            <p className="text-gray-400 text-xs sm:text-sm mb-6 sm:mb-8 max-w-sm sm:max-w-md px-2">
+              The file hash matches exactly with the server's immutable records. Decryption was fully successful.
+            </p>
+            
+            <div className="text-neon-green font-mono text-[10px] sm:text-xs p-4 sm:p-5 border border-neon-green/30 bg-neon-green/10 rounded-lg w-full mb-8 sm:mb-10 text-left overflow-x-auto shadow-inner">
+              <span className="text-white block mb-2 sm:mb-3 opacity-50 uppercase tracking-widest text-[8px] sm:text-[10px]">SHA-256 Match Fingerprint:</span>
+              <span className="break-all block">{metadata.fileHash}</span>
+            </div>
+
+            {decryptedFileUrl && (
+              <a 
+                href={decryptedFileUrl} 
+                download={metadata.filename}
+                className="text-xs sm:text-sm text-neon-blue hover:text-white uppercase tracking-widest font-mono underline decoration-neon-blue/50 underline-offset-8 transition-colors flex items-center gap-2 py-2 px-6 rounded-full hover:bg-white/5 active:bg-white/10"
               >
-                <DownloadCloud size={22} />
-                Decrypt &amp; Download
-              </button>
-              <p className="mt-6 text-[10px] sm:text-xs text-gray-500 font-mono text-center px-4">
-                Requires valid decryption key in URL hash fragment.
+                <DownloadCloud size={16} /> Force Re-download
+              </a>
+            )}
+          </div>
+        )}
+
+        {downloadState === "ERROR" && (
+          <div className="flex flex-col items-center text-center py-10 sm:py-12 px-2 w-full">
+            <AlertTriangle size={64} className="text-red-500 mb-6 drop-shadow-[0_0_20px_rgba(239,68,68,0.8)] sm:w-20 sm:h-20" />
+            <h2 className="text-2xl sm:text-3xl font-bold mb-4 tracking-wide text-white font-mono uppercase">Access Denied</h2>
+            
+            <div className="w-full bg-red-500/10 p-4 sm:p-6 border border-red-500/30 rounded-lg mb-6 sm:mb-8 text-left">
+              <p className="text-red-400 text-xs sm:text-sm font-mono leading-relaxed break-words break-all">
+                <span className="text-red-500 font-bold block mb-1">SYSTEM_FAULT:</span> 
+                {errorMessage}
               </p>
-            </motion.div>
-          )}
-
-          {downloadState === "DECRYPTING" && (
-            <motion.div 
-              key="decrypting"
-              initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
-              className="flex flex-col items-center justify-center py-12"
-            >
-              <div className="relative w-24 h-24 sm:w-28 sm:h-28 mb-8">
-                <motion.div animate={{ rotate: 360 }} transition={{ duration: 1.5, repeat: Infinity, ease: "linear" }}
-                            className="absolute inset-0 rounded-full border-2 border-t-neon-blue border-r-neon-blue border-b-transparent border-l-transparent" />
-                <motion.div animate={{ rotate: -360 }} transition={{ duration: 2.5, repeat: Infinity, ease: "linear" }}
-                            className="absolute inset-2 rounded-full border-2 border-t-neon-purple border-l-neon-purple border-b-transparent border-r-transparent opacity-70" />
-                <div className="absolute inset-0 flex items-center justify-center">
-                  <ShieldCheck size={32} className="text-neon-blue text-glow-blue" />
-                </div>
-              </div>
-              <h2 className="text-lg sm:text-xl font-bold text-neon-blue text-glow-blue font-mono uppercase tracking-[0.15em] animate-pulse text-center">
-                Decrypting Data...
-              </h2>
-              <p className="text-gray-400 text-[10px] sm:text-xs mt-4 uppercase tracking-[0.2em]">Running SHA-256 Checksum</p>
-            </motion.div>
-          )}
-
-          {downloadState === "VERIFIED" && metadata && (
-            <motion.div 
-              key="verified"
-              initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}
-              className="flex flex-col items-center text-center py-6"
-            >
-              <motion.div initial={{ scale: 0 }} animate={{ scale: 1 }} transition={{ type: "spring", bounce: 0.6 }}
-                          className="bg-neon-green/10 p-5 rounded-full mb-6 border border-neon-green/20 glow-green">
-                <ShieldCheck size={56} className="text-neon-green sm:w-20 sm:h-20" />
-              </motion.div>
-              <h2 className="text-2xl sm:text-3xl font-bold mb-3 tracking-wide text-white">Integrity Verified</h2>
-              <p className="text-gray-400 text-xs sm:text-sm mb-8 max-w-xs leading-relaxed">
-                The file hash matches the server&apos;s records. Payload decrypted successfully.
-              </p>
-              
-              <div className="text-neon-green font-mono text-[10px] sm:text-xs p-4 border border-neon-green/30 bg-neon-green/5 rounded-xl w-full mb-8 break-all overflow-hidden text-left shadow-[inset_0_0_20px_rgba(57,255,20,0.05)]">
-                <span className="text-white block mb-2 tracking-wider">SHA-256 CHECKSUM MATCH:</span>
-                <span className="opacity-80">{metadata.fileHash}</span>
-              </div>
-
-              {decryptedFileUrl && (
-                <a 
-                  href={decryptedFileUrl} 
-                  download={metadata.filename}
-                  className="group flex items-center gap-2 text-xs sm:text-sm text-neon-blue hover:text-white uppercase tracking-[0.15em] font-mono py-2 px-6 rounded-lg transition-colors hover:bg-neon-blue/10 border border-transparent hover:border-neon-blue/30"
-                >
-                  <DownloadCloud size={16} className="group-hover:scale-110 transition-transform" />
-                  Download Again
-                </a>
-              )}
-            </motion.div>
-          )}
-
-          {downloadState === "ERROR" && (
-            <motion.div 
-              key="error"
-              initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }}
-              className="flex flex-col items-center text-center py-8"
-            >
-              <div className="bg-red-500/10 p-4 mx-auto rounded-full mb-6 border border-red-500/30">
-                <AlertTriangle size={56} className="text-red-500 drop-shadow-[0_0_15px_rgba(239,68,68,0.8)]" />
-              </div>
-              <h2 className="text-2xl font-bold mb-4 tracking-wide text-white uppercase text-glow-red">Access Denied</h2>
-              <div className="w-full bg-black/40 p-4 sm:p-5 border border-red-500/30 rounded-xl shadow-[inset_0_0_20px_rgba(239,68,68,0.1)]">
-                <p className="text-red-400 text-xs sm:text-sm font-mono break-words">
-                  {errorMessage}
-                </p>
-              </div>
-              <p className="mt-8 text-[10px] sm:text-xs text-gray-500 uppercase tracking-[0.15em] font-mono text-center">
-                The link is invalid, expired, or tampered with.
-              </p>
-            </motion.div>
-          )}
-        </AnimatePresence>
+            </div>
+            
+            <p className="text-[10px] sm:text-xs text-gray-500 uppercase tracking-widest font-mono text-center flex items-center justify-center gap-2">
+              <Clock size={12} className="shrink-0" />
+              May be expired (over 24h), invalid, or tampered.
+            </p>
+          </div>
+        )}
 
       </section>
     </main>

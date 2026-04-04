@@ -2,10 +2,8 @@
 
 import { useState } from "react";
 import DropZone from "@/components/DropZone";
-import { Lock, File as FileIcon, CheckCircle2, Shield, UploadCloud, Copy, RefreshCw } from "lucide-react";
+import { Lock, File as FileIcon, CheckCircle2, Shield, UploadCloud, Copy, Clock } from "lucide-react";
 import { generateEncryptionKey, exportKey, calculateFileHash, encryptFile } from "@/utils/crypto";
-import { motion, AnimatePresence } from "framer-motion";
-import { cn } from "@/utils/cn";
 
 type UploadState = "IDLE" | "ENCRYPTING" | "UPLOADING" | "SUCCESS";
 
@@ -20,6 +18,7 @@ export default function Home() {
     
     try {
       const fileBuffer = await droppedFile.arrayBuffer();
+
       const fileHash = await calculateFileHash(fileBuffer);
       const key = await generateEncryptionKey();
       const exportedKeyString = await exportKey(key);
@@ -50,7 +49,7 @@ export default function Home() {
       }
     } catch (e) {
       console.error(e);
-      alert("Encryption or Upload failed. Please try again.");
+      alert("Encryption or Upload failed. Is the server running?");
       setUploadState("IDLE");
     }
   };
@@ -67,161 +66,96 @@ export default function Home() {
   };
 
   return (
-    <main className="min-h-screen flex flex-col items-center justify-center px-4 py-8 sm:p-6 relative overflow-hidden bg-[#05050A]">
-      {/* Animated Matrix Grid Background Simulation */}
-      <div className="fixed inset-0 pointer-events-none opacity-[0.03] z-0" 
-           style={{ backgroundImage: "linear-gradient(#0ff0fc 1px, transparent 1px), linear-gradient(90deg, #0ff0fc 1px, transparent 1px)", backgroundSize: "3rem 3rem" }}>
-      </div>
-      
-      {/* Background ambient light */}
-      <motion.div 
-        animate={{ scale: [1, 1.05, 1], opacity: [0.3, 0.5, 0.3] }} 
-        transition={{ duration: 8, repeat: Infinity, ease: "easeInOut" }}
-        className="absolute top-0 right-1/4 w-[400px] h-[400px] sm:w-[600px] sm:h-[600px] bg-neon-purple/10 blur-[100px] rounded-full pointer-events-none"
-      />
-      <motion.div 
-        animate={{ scale: [1, 1.1, 1], opacity: [0.2, 0.4, 0.2] }} 
-        transition={{ duration: 10, repeat: Infinity, ease: "easeInOut", delay: 2 }}
-        className="absolute bottom-0 left-1/4 w-[400px] h-[400px] sm:w-[600px] sm:h-[600px] bg-neon-blue/10 blur-[120px] rounded-full pointer-events-none" 
-      />
+    <main className="min-h-screen flex flex-col items-center justify-center p-4 sm:p-6 relative overflow-hidden bg-cyber-dark">
+      <div className="absolute top-1/4 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[300px] sm:w-[600px] h-[300px] sm:h-[600px] bg-neon-purple/10 sm:bg-neon-purple/5 blur-[80px] sm:blur-[120px] rounded-full pointer-events-none"></div>
 
-      <header className="mb-10 sm:mb-12 flex flex-col items-center text-center z-10 w-full max-w-lg mx-auto">
-        <motion.div 
-          initial={{ y: -30, opacity: 0 }}
-          animate={{ y: 0, opacity: 1 }}
-          className="flex items-center gap-3 sm:gap-4 mb-4 sm:mb-6 px-4 py-2 border border-neon-blue/30 rounded-2xl bg-black/40 backdrop-blur-md shadow-[0_0_30px_rgba(15,240,252,0.1)]"
-        >
-          <Shield size={32} className="text-neon-blue drop-shadow-[0_0_8px_rgba(15,240,252,0.8)]" />
-          <h1 className="text-4xl sm:text-5xl font-black tracking-tighter uppercase text-white">
+      <header className="mb-8 flex flex-col items-center text-center z-10 w-full px-4">
+        <div className="flex items-center gap-2 sm:gap-3 mb-2 sm:mb-4">
+          <Shield size={32} className="text-neon-purple sm:w-10 sm:h-10" />
+          <h1 className="text-3xl sm:text-5xl font-black tracking-tighter uppercase text-white">
             Cypher<span className="text-neon-blue text-glow-blue">Drop</span>
           </h1>
-        </motion.div>
-        <motion.p 
-          initial={{ opacity: 0 }} 
-          animate={{ opacity: 1 }} 
-          transition={{ delay: 0.2 }}
-          className="text-gray-400 font-mono text-xs sm:text-sm max-w-xs sm:max-w-md tracking-wider leading-relaxed"
-        >
-          Military-grade End-to-End Encryption. Only you control the keys.
-        </motion.p>
+        </div>
+        <p className="text-gray-400 font-mono text-xs sm:text-sm max-w-sm sm:max-w-md tracking-wider">
+          End-to-End Encrypted File Transfer. The server never sees your keys.
+        </p>
       </header>
 
-      <section className="w-full max-w-xl sm:max-w-2xl bg-[#0B0D14]/80 backdrop-blur-xl border border-gray-800/80 rounded-[2rem] p-6 sm:p-10 z-10 shadow-[0_20px_50px_rgba(0,0,0,0.5)]">
-        <AnimatePresence mode="wait">
-          {uploadState === "IDLE" && (
-            <motion.div
-              key="dropzone"
-              initial={{ opacity: 0, scale: 0.95 }}
-              animate={{ opacity: 1, scale: 1 }}
-              exit={{ opacity: 0, scale: 0.95, filter: "blur(10px)" }}
-              transition={{ duration: 0.3 }}
-            >
-              <DropZone onFileDrop={handleFileDrop} />
-            </motion.div>
-          )}
+      <section className="w-full max-w-xl sm:max-w-2xl bg-cyber-gray/90 backdrop-blur-md border border-gray-800 rounded-2xl p-6 sm:p-8 z-10 shadow-2xl relative">
+        <div className="absolute inset-0 bg-gradient-to-b from-white/5 to-transparent rounded-2xl pointer-events-none"></div>
+        {uploadState === "IDLE" && (
+          <>
+            <DropZone onFileDrop={handleFileDrop} />
+            <div className="mt-6 flex items-center justify-center gap-2 text-gray-500 text-xs sm:text-sm">
+              <Clock size={14} className="text-neon-purple" />
+              <p>Uploaded files self-destruct automatically after 24 hours.</p>
+            </div>
+          </>
+        )}
 
-          {(uploadState === "ENCRYPTING" || uploadState === "UPLOADING") && (
-            <motion.div 
-              key="processing"
-              initial={{ opacity: 0, scale: 0.9 }}
-              animate={{ opacity: 1, scale: 1 }}
-              exit={{ opacity: 0, scale: 1.1 }}
-              className="flex flex-col items-center justify-center py-10 sm:py-16 text-center"
-            >
-              <div className="relative mb-10 w-24 h-24 sm:w-32 sm:h-32">
-                {/* Abstract Spinner Rings */}
-                <motion.div 
-                  animate={{ rotate: 360 }} 
-                  transition={{ duration: 2, repeat: Infinity, ease: "linear" }}
-                  className={cn(
-                    "absolute inset-0 rounded-full border-2 border-t-transparent border-b-transparent",
-                    uploadState === "ENCRYPTING" ? "border-l-neon-purple border-r-neon-purple shadow-[0_0_15px_rgba(176,38,255,0.5)]" : "border-l-neon-blue border-r-neon-blue shadow-[0_0_15px_rgba(15,240,252,0.5)]"
-                  )}
-                />
-                <motion.div 
-                  animate={{ rotate: -360 }} 
-                  transition={{ duration: 3, repeat: Infinity, ease: "linear" }}
-                  className={cn(
-                    "absolute inset-2 rounded-full border border-t-transparent border-b-transparent opacity-50",
-                    uploadState === "ENCRYPTING" ? "border-l-neon-purple border-r-neon-purple" : "border-l-neon-blue border-r-neon-blue"
-                  )}
-                />
-
-                <div className="absolute inset-0 flex items-center justify-center backdrop-blur-[2px] rounded-full">
-                  {uploadState === "ENCRYPTING" ? (
-                    <motion.div animate={{ scale: [1, 1.1, 1] }} transition={{ repeat: Infinity, duration: 1.5 }}>
-                      <Lock size={36} className="text-neon-purple sm:w-10 sm:h-10 text-glow-purple" />
-                    </motion.div>
-                  ) : (
-                    <UploadCloud size={36} className="text-neon-blue sm:w-10 sm:h-10 text-glow-blue animate-pulse" />
-                  )}
-                </div>
+        {(uploadState === "ENCRYPTING" || uploadState === "UPLOADING") && (
+          <div className="flex flex-col items-center justify-center py-10 sm:py-12 text-center text-white">
+            <div className="relative mb-6 sm:mb-8">
+              <div className={`w-16 h-16 sm:w-24 sm:h-24 rounded-full border-4 border-t-transparent animate-spin ${uploadState === "ENCRYPTING" ? "border-neon-purple glow-purple" : "border-neon-blue glow-blue"}`}></div>
+              <div className="absolute inset-0 flex items-center justify-center">
+                {uploadState === "ENCRYPTING" ? (
+                  <Lock size={24} className="text-neon-purple sm:w-8 sm:h-8" />
+                ) : (
+                  <UploadCloud size={24} className="text-neon-blue sm:w-8 sm:h-8" />
+                )}
               </div>
-              
-              <h2 className={cn(
-                "text-xl sm:text-2xl font-bold mb-6 font-mono uppercase tracking-[0.2em] transition-colors",
-                uploadState === "ENCRYPTING" ? "text-neon-purple text-glow-purple" : "text-neon-blue text-glow-blue"
-              )}>
-                {uploadState === "ENCRYPTING" ? "ENCRYPTING LOCALLY..." : "UPLOADING PAYLOAD..."}
-              </h2>
+            </div>
+            
+            <h2 className={`text-xl sm:text-2xl font-bold mb-4 font-mono uppercase tracking-widest ${uploadState === "ENCRYPTING" ? "text-glow-purple text-neon-purple" : "text-glow-blue text-neon-blue"}`}>
+              {uploadState === "ENCRYPTING" ? "Encrypting Locally..." : "Uploading Payload..."}
+            </h2>
+            <div className="flex items-center justify-center gap-3 px-4 sm:px-6 py-3 bg-black/50 rounded-lg border border-gray-800 font-mono text-xs sm:text-sm text-white w-full max-w-xs sm:max-w-sm">
+              <FileIcon size={16} className="text-gray-400 shrink-0" />
+              <span className="truncate text-gray-300 flex-1 text-left">{file?.name}</span>
+              <span className="text-gray-500 shrink-0">{(file?.size ? (file.size / 1024 / 1024).toFixed(2) : "0.00")} MB</span>
+            </div>
+            <p className="mt-4 sm:mt-6 text-[10px] sm:text-xs text-gray-500 uppercase tracking-widest">
+              AES-GCM 256-bit
+            </p>
+          </div>
+        )}
 
-              <div className="flex flex-col sm:flex-row items-center justify-center gap-3 sm:gap-4 px-6 sm:px-8 py-4 bg-black/60 rounded-xl border border-gray-800/80 font-mono text-xs sm:text-sm text-white w-full max-w-sm mt-4 backdrop-blur-sm">
-                <FileIcon size={20} className="text-gray-400 hidden sm:block" />
-                <span className="truncate w-full text-center sm:max-w-[200px] text-gray-300 font-semibold">{file?.name}</span>
-                <span className="text-gray-500 whitespace-nowrap px-3 py-1 bg-gray-900 rounded-md">
-                  {(file?.size ? (file.size / 1024 / 1024).toFixed(2) : "0.00")} MB
-                </span>
-              </div>
-            </motion.div>
-          )}
+        {uploadState === "SUCCESS" && (
+          <div className="flex flex-col items-center justify-center py-6 sm:py-8 text-center">
+            <CheckCircle2 size={64} className="text-neon-green mb-4 sm:mb-6 glow-green sm:w-20 sm:h-20" />
+            <h2 className="text-2xl sm:text-3xl font-bold mb-2 sm:mb-3 tracking-wide text-white">Vault Secured</h2>
+            <p className="text-gray-400 text-xs sm:text-sm mb-6 max-w-sm">
+              Your file is encrypted and stored. Share this link. Once the key is lost, the file is irrecoverable.
+            </p>
 
-          {uploadState === "SUCCESS" && (
-            <motion.div 
-              key="success"
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              className="flex flex-col items-center justify-center py-6 sm:py-8 text-center"
-            >
-              <motion.div 
-                initial={{ scale: 0 }} 
-                animate={{ scale: 1 }} 
-                transition={{ type: "spring", bounce: 0.5 }}
-                className="bg-neon-green/10 p-4 rounded-full mb-6 border border-neon-green/20 glow-green"
-              >
-                <CheckCircle2 size={56} className="text-neon-green sm:w-16 sm:h-16" />
-              </motion.div>
-              
-              <h2 className="text-3xl sm:text-4xl font-bold mb-3 tracking-wider text-white">Vault Secured</h2>
-              <p className="text-gray-400 text-sm sm:text-base mb-10 max-w-sm leading-relaxed px-4">
-                Payload is locked. The key is in this link. <span className="text-red-400 font-bold block mt-1">If lost, recovery is mathematically impossible.</span>
-              </p>
-
-              <div className="flex flex-col sm:flex-row items-center w-full max-w-lg bg-[#05050A] border border-neon-green/40 shadow-[0_0_20px_rgba(57,255,20,0.1)] rounded-xl p-2 mb-8 sm:mb-10 gap-2">
-                <input 
-                  type="text" 
-                  readOnly 
-                  value={shareLink} 
-                  className="bg-transparent w-full outline-none text-neon-green font-mono text-xs sm:text-sm px-4 py-3 text-center sm:text-left selection:bg-neon-green/30"
-                />
-                <button 
-                  onClick={copyToClipboard}
-                  className="w-full sm:w-auto bg-neon-green/20 hover:bg-neon-green hover:text-black text-neon-green px-6 py-3 rounded-lg transition-all duration-300 flex items-center justify-center gap-2 font-bold uppercase tracking-wider text-sm shadow-[0_0_10px_rgba(57,255,20,0.2)] hover:shadow-[0_0_20px_rgba(57,255,20,0.5)]"
-                >
-                  <Copy size={18} />
-                  Copy
-                </button>
-              </div>
-
+            <div className="flex items-center w-full bg-black/60 border border-neon-green/30 rounded-lg p-2 mb-6 transition-all focus-within:border-neon-green/60 focus-within:glow-green">
+              <input 
+                type="text" 
+                readOnly 
+                value={shareLink} 
+                className="bg-transparent w-full outline-none text-neon-green font-mono text-[10px] sm:text-xs md:text-sm px-3"
+              />
               <button 
-                onClick={reset}
-                className="group flex items-center gap-2 text-xs sm:text-sm text-gray-500 hover:text-white uppercase tracking-widest transition-all font-mono py-2 px-4 rounded-lg hover:bg-white/5"
+                onClick={copyToClipboard}
+                className="bg-neon-green/20 hover:bg-neon-green/40 text-neon-green p-2 sm:px-4 sm:py-2 rounded transition-colors flex items-center justify-center gap-2 font-bold cursor-pointer shrink-0"
               >
-                <RefreshCw size={16} className="group-hover:-rotate-180 transition-transform duration-500" />
-                Encrypt Another Payload
+                <Copy size={16} className="sm:w-5 sm:h-5" />
               </button>
-            </motion.div>
-          )}
-        </AnimatePresence>
+            </div>
+
+            <div className="w-full bg-red-500/10 border border-red-500/20 text-red-400 p-3 sm:p-4 rounded-lg flex items-start sm:items-center gap-3 text-left sm:text-center mb-8">
+              <Clock size={18} className="shrink-0 mt-0.5 sm:mt-0" />
+              <p className="text-xs sm:text-sm font-mono flex-1">This link and file will self-destruct from the servers automatically in <span className="font-bold text-white">24 Hours</span>.</p>
+            </div>
+
+            <button 
+              onClick={reset}
+              className="text-xs sm:text-sm text-gray-400 hover:text-white uppercase tracking-widest transition-colors font-mono underline decoration-gray-600 hover:decoration-white underline-offset-4 cursor-pointer"
+            >
+              Encrypt Another File
+            </button>
+          </div>
+        )}
       </section>
     </main>
   );
