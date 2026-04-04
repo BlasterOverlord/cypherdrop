@@ -40,8 +40,8 @@ export default function Home() {
       formData.append("file", encryptedBlob, droppedFile.name);
       formData.append("fileHash", fileHash);
 
-      // Send to the Express API Locker
-      const response = await fetch("http://localhost:5000/api/upload", {
+      // Send to the Next.js API Locker
+      const response = await fetch("/api/upload", {
         method: "POST",
         body: formData,
       });

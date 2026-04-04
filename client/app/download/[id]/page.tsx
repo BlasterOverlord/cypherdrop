@@ -21,7 +21,7 @@ export default function DownloadPage() {
 
     const fetchMetadata = async () => {
       try {
-        const response = await fetch(`http://localhost:5000/api/metadata/${fileId}`);
+        const response = await fetch(`/api/metadata/${fileId}`);
         const data = await response.json();
 
         if (response.ok) {
@@ -55,7 +55,7 @@ export default function DownloadPage() {
       const cryptoKey = await importKey(hashFragment);
 
       // 2. Fetch the encrypted binary payload from the server
-      const blobResponse = await fetch(`http://localhost:5000/api/download/${fileId}`);
+      const blobResponse = await fetch(`/api/download/${fileId}`);
       if (!blobResponse.ok) {
         throw new Error("Failed to fetch the encrypted file from the server.");
       }
