@@ -5,7 +5,6 @@ import { useParams } from "next/navigation";
 import { DownloadCloud, ShieldCheck, AlertTriangle, Lock, File as FileIcon, Loader2 } from "lucide-react";
 import { importKey, decryptFile, calculateFileHash } from "@/utils/crypto";
 import { motion, AnimatePresence } from "framer-motion";
-import { cn } from "@/utils/cn";
 
 type DownloadState = "LOADING_META" | "READY" | "DECRYPTING" | "VERIFIED" | "ERROR";
 
@@ -81,9 +80,13 @@ export default function DownloadPage() {
       a.click();
       document.body.removeChild(a);
 
-    } catch (err: any) {
+      } catch (err: unknown) {
       console.error(err);
-      setErrorMessage(err.message || "Decryption failed. The key might be invalid.");
+      if (err instanceof Error) {
+        setErrorMessage(err.message || "Decryption failed. The key might be invalid.");
+      } else {
+        setErrorMessage("Decryption failed. The key might be invalid.");
+      }
       setDownloadState("ERROR");
     }
   };
@@ -198,7 +201,7 @@ export default function DownloadPage() {
               </motion.div>
               <h2 className="text-2xl sm:text-3xl font-bold mb-3 tracking-wide text-white">Integrity Verified</h2>
               <p className="text-gray-400 text-xs sm:text-sm mb-8 max-w-xs leading-relaxed">
-                The file hash matches the server's records. Payload decrypted successfully.
+                The file hash matches the server&apos;s records. Payload decrypted successfully.
               </p>
               
               <div className="text-neon-green font-mono text-[10px] sm:text-xs p-4 border border-neon-green/30 bg-neon-green/5 rounded-xl w-full mb-8 break-all overflow-hidden text-left shadow-[inset_0_0_20px_rgba(57,255,20,0.05)]">
