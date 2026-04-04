@@ -15,7 +15,7 @@ const fileSchema = new mongoose.Schema(
       type: Number,
       required: true,
     },
-    encryptedBlobPath: {
+    s3Key: {
       type: String,
       required: true,
     },

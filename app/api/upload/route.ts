@@ -1,52 +1,51 @@
 import { NextRequest, NextResponse } from "next/server";
-import fs from "fs";
-import path from "path";
+import { PutObjectCommand } from "@aws-sdk/client-s3";
+import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
 import dbConnect from "@/lib/mongoose";
 import FileModel from "@/lib/models/File";
+import { r2 } from "@/lib/r2";
+
+const BUCKET_NAME = process.env.R2_BUCKET_NAME || "cypherdrop-vault";
 
 export async function POST(req: NextRequest) {
   try {
     await dbConnect();
+    
+    const body = await req.json();
+    const { filename, fileHash, fileSize } = body;
 
-    const formData = await req.formData();
-    const file = formData.get("file") as File;
-    const fileHash = formData.get("fileHash") as string;
-
-    if (!file || !fileHash) {
-      return NextResponse.json({ error: "Missing file or hash" }, { status: 400 });
+    if (!filename || !fileHash || !fileSize) {
+      return NextResponse.json({ error: "Missing metadata (filename, fileHash, fileSize)" }, { status: 400 });
     }
-
-    const buffer = Buffer.from(await file.arrayBuffer());
 
     // Generate ID
     const fileId = Math.random().toString(36).substring(2, 10);
     const expiresAt = new Date(Date.now() + 24 * 60 * 60 * 1000);
+    const s3Key = `${fileId}-${filename}`; // Ensure unique object key
 
-    // Ensure uploads directory exists securely outside public folder
-    const uploadDir = path.join(process.cwd(), "uploads");
-    if (!fs.existsSync(uploadDir)) {
-      fs.mkdirSync(uploadDir, { recursive: true });
-    }
-
-    const filename = `${Date.now()}-${file.name}`;
-    const encryptedBlobPath = path.join(uploadDir, filename);
-
-    // Save to disk
-    fs.writeFileSync(encryptedBlobPath, buffer);
-
-    // Save metadata
+    // Save metadata locally to link the URL with the object in R2
     await FileModel.create({
       fileId,
-      filename: file.name,
-      fileSize: buffer.length,
-      encryptedBlobPath,
+      filename,
+      fileSize,
+      s3Key,
       fileHash,
       expiresAt,
     });
 
-    return NextResponse.json({ message: "File successfully encrypted and stored!", fileId }, { status: 201 });
+    // Create command for PutObject
+    const command = new PutObjectCommand({
+      Bucket: BUCKET_NAME,
+      Key: s3Key,
+      ContentType: "application/octet-stream",
+    });
+
+    // Generate presigned URL valid for upload (1 hour limit)
+    const presignedUrl = await getSignedUrl(r2, command, { expiresIn: 3600 });
+
+    return NextResponse.json({ message: "Upload URL generated", presignedUrl, fileId }, { status: 201 });
   } catch (error) {
     console.error("Upload error:", error);
-    return NextResponse.json({ error: "Server error processing upload" }, { status: 500 });
+    return NextResponse.json({ error: "Server error setting up upload" }, { status: 500 });
   }
 }

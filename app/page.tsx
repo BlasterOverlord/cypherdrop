@@ -27,25 +27,42 @@ export default function Home() {
 
       setUploadState("UPLOADING");
 
-      const formData = new FormData();
       const encryptedBlob = new Blob([encryptedCombinedBuffer], { type: "application/octet-stream" });
-      
-      formData.append("file", encryptedBlob, droppedFile.name);
-      formData.append("fileHash", fileHash);
 
-      const response = await fetch("/api/upload", {
+      // Step 1: Request presigned upload URL from our backend
+      const resMeta = await fetch("/api/upload", {
         method: "POST",
-        body: formData,
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          filename: droppedFile.name,
+          fileSize: encryptedBlob.size,
+          fileHash
+        }),
       });
 
-      const data = await response.json();
-      
-      if (response.ok) {
-        const url = `${window.location.origin}/download/${data.fileId}#${exportedKeyString}`;
+      const metaData = await resMeta.json();
+
+      if (!resMeta.ok) {
+        toast.error(metaData.error || "Failed to initialize secure upload.");
+        setUploadState("IDLE");
+        return;
+      }
+
+      // Step 2: Upload file directly to Cloudflare R2
+      const r2Res = await fetch(metaData.presignedUrl, {
+        method: "PUT",
+        body: encryptedBlob,
+        headers: {
+          "Content-Type": "application/octet-stream",
+        }
+      });
+
+      if (r2Res.ok) {
+        const url = `${window.location.origin}/download/${metaData.fileId}#${exportedKeyString}`;
         setShareLink(url);
         setUploadState("SUCCESS");
       } else {
-        toast.error(data.error || "Server upload failed.");
+        toast.error("Failed to upload directly to R2 bucket. Check CORS policy.");
         setUploadState("IDLE");
       }
     } catch (e) {
@@ -91,10 +108,6 @@ export default function Home() {
         {uploadState === "IDLE" && (
           <>
             <DropZone onFileDrop={handleFileDrop} />
-            <div className="mt-6 flex items-center justify-center gap-2 text-gray-500 text-xs sm:text-sm">
-              <Clock size={14} className="text-neon-purple" />
-              <p>Uploaded files will be deleted automatically after 24 hours.</p>
-            </div>
           </>
         )}
 
