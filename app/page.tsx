@@ -14,6 +14,11 @@ export default function Home() {
   const [shareLink, setShareLink] = useState<string>("");
 
   const handleFileDrop = async (droppedFile: File) => {
+    if (droppedFile.size > 100 * 1024 * 1024) {
+      toast.error("File exceeds the maximum limit of 100MB.");
+      return;
+    }
+
     setFile(droppedFile);
     setUploadState("ENCRYPTING");
     

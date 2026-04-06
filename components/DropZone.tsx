@@ -65,6 +65,10 @@ export default function DropZone({ onFileDrop }: { onFileDrop: (file: File) => v
       <p className="text-gray-400 text-center text-xs sm:text-sm">
         or click to browse from your device
       </p>
+      
+      <div className="mt-4 px-3 py-1 bg-gray-800/50 rounded-full border border-gray-700/50 text-[10px] sm:text-xs text-gray-500 font-mono tracking-widest uppercase">
+        Max file size: 100 MB
+      </div>
     </div>
   );
 }

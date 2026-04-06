@@ -18,6 +18,10 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "Missing metadata (filename, fileHash, fileSize)" }, { status: 400 });
     }
 
+    if (fileSize > 100 * 1024 * 1024) {
+      return NextResponse.json({ error: "File exceeds strictly enforced 100MB limit." }, { status: 413 });
+    }
+
     // Generate ID
     const fileId = Math.random().toString(36).substring(2, 10);
     const expiresAt = new Date(Date.now() + 24 * 60 * 60 * 1000);
