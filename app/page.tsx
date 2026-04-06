@@ -108,6 +108,10 @@ export default function Home() {
         {uploadState === "IDLE" && (
           <>
             <DropZone onFileDrop={handleFileDrop} />
+            <div className="mt-6 flex items-center justify-center gap-2 text-gray-500 font-mono text-[10px] sm:text-xs">
+              <Clock size={14} className="text-gray-400" />
+              <p>Uploaded files will be permanently deleted after 24 hours.</p>
+            </div>
           </>
         )}
 

@@ -143,7 +143,7 @@ export default function DownloadPage() {
 
             <div className="flex flex-col text-xs sm:text-sm gap-2">
               <p className="text-gray-400 font-mono">
-                Requires valid client-side key in URL hash.
+                Your device will securely decrypt this file locally.
               </p>
             </div>
           </div>
