@@ -42,6 +42,7 @@ export async function POST(req: NextRequest) {
       Bucket: BUCKET_NAME,
       Key: s3Key,
       ContentType: "application/octet-stream",
+      ContentLength: fileSize,
     });
 
     // Generate presigned URL valid for upload (1 hour limit)
