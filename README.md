@@ -31,7 +31,17 @@ Consequently, the CypherDrop backend and database/cloud storage only store the c
 
 ---
 
-## 🔐 Cryptography Deep Dive
+## � Architecture Workflow
+
+### Sender Flow
+![Sender Flow Diagram](./public/cypherdrop_sender_flow.svg)
+
+### Receiver Flow
+![Receiver Flow Diagram](./public/cypherdrop_receiver_flow.svg)
+
+---
+
+## �🔐 Cryptography Deep Dive
 
 ### AES-GCM 256-bit Encryption
 CypherDrop utilizes **AES-GCM (Advanced Encryption Standard - Galois/Counter Mode)** with a 256-bit key length. GCM is an Authenticated Encryption with Associated Data (AEAD) cipher. This means it provides both **confidentiality** (hiding the data) and **authenticity** (detecting if the ciphertext was tampered with).
